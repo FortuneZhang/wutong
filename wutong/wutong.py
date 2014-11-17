@@ -1,6 +1,7 @@
 __author__ = 'Administrator'
 from Queue import Queue
-import threading, re
+import threading, re, pyodbc
+from Config.db import SQLServerDriver
 
 
 class WuTongReceiver():
@@ -13,11 +14,9 @@ class WuTongReceiver():
     def receive(self, data):
         if '@' in data:
             self.data += data
-        # print 'receiver data'
         if data.endswith('</Data>'):
             self.queue.put({'source': self.name, 'data': self.data})
             data = ''
-            # print 'insert queue and data is blank'
 
 
 class WuTongHandler():
@@ -30,8 +29,6 @@ class WuTongHandler():
         threading.Thread(target=self._handle, args=(data,)).start()
 
     def _handle(self, data):
-        print '_handle'
-        # print data
         items = re.findall('<Data>([^<]+)</Data>', data)
         for item in items:
             itemJosn = {x.split('=')[0]: x.split('=')[1] for x in item.split('@@@@@@') if '=' in x}
@@ -41,27 +38,31 @@ class WuTongHandler():
 class WuTongDB():
     def __init__(self):
         self.name = 'wutong'
+        self.dbDriver = SQLServerDriver()
 
     def receive(self, data):
         sql = self._build_sql(data)
+        conn = self.dbDriver.getConnection()
+        cursor = conn.cursor()
+        cursor.execute(sql)
+        cursor.commit()
+        self.dbDriver.closeConnection()
 
     def _build_sql(self, data):
-        # print data
-        # print data.keys()
-        # print data.values()
         keys = []
         values = []
+        if len(data['name']) < 4:
+            print data
         for key, value in data.iteritems():
             keys.append('"' + key + '"')
             values.append("'" + value + "'")
 
-        sql = 'INSERT INTO wutong_list ( '
+        sql = 'INSERT INTO dbo.wutong_list ( '
         sql += ' , '.join(keys)
         sql += ' ) values( '
         sql += ' , '.join(values)
         sql += ' ) '
-        return sql
-
+        return sql.decode('utf-8')
 
 
 

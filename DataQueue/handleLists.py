@@ -1,6 +1,6 @@
 __author__ = 'Administrator'
 import threading,time
-from wutong.wutong import WuTongHandler
+from Wutong.wutong import WuTongHandler
 class HandleDataQueue(threading.Thread):
     def __init__(self, queue):
         threading.Thread.__init__(self)
@@ -8,7 +8,6 @@ class HandleDataQueue(threading.Thread):
         self.wutong = WuTongHandler()
 
     def run(self):
-        # print 'thead run'
         while True:
             if self.queue.empty() is not True:
                 # print 'not empty'
