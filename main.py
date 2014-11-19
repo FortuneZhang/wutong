@@ -1,7 +1,8 @@
 import dpkt, pcap
 from Queue import Queue
-from wutong.wutong import WuTongReceiver
+from wutong.wutong import *
 from dataQueue.handleLists import HandleDataQueue
+from dataQueue.requestCheInfo import RequestCheInfo
 
 class Main():
     def __init__(self):
@@ -34,5 +35,8 @@ class Main():
 
 
 if __name__ == '__main__':
-    main = Main()
-    main.main()
+    # main = Main()
+    # main.main()
+
+    r = RequestCheInfo()
+    r.run()

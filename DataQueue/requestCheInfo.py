@@ -1,12 +1,17 @@
-import threading
-from Queue import Queue
-from config.db import SQLServerDriver
+from config.db import SQLServerDriver, Config
+from wutong.wutong import WutongRequestInfo
 
 
-class RequestCheInfo(threading.Thread):
+class RequestCheInfo():
     def __init__(self):
-        pass
+        self.sql_server_driver = SQLServerDriver()
+        self.config = Config()
 
 
     def run(self):
-        pass
+        wutong_request_info = WutongRequestInfo(self.sql_server_driver, self.config.get_sync_param())
+        wutong_request_info.start()
+
+
+
+
