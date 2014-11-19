@@ -13,3 +13,7 @@ class SQLServerDriver():
 
     def closeConnection(self):
         self.connection.close()
+
+
+class Config():
+    pass 

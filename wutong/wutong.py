@@ -1,7 +1,7 @@
 __author__ = 'Administrator'
 from Queue import Queue
 import threading, re, pyodbc
-from Config.db import SQLServerDriver
+from config.db import SQLServerDriver
 
 
 class WuTongReceiver():

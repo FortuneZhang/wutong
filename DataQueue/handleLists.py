@@ -1,6 +1,6 @@
 __author__ = 'Administrator'
 import threading,time
-from Wutong.wutong import WuTongHandler
+from wutong.wutong import WuTongHandler
 class HandleDataQueue(threading.Thread):
     def __init__(self, queue):
         threading.Thread.__init__(self)

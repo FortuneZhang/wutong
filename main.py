@@ -1,7 +1,7 @@
 import dpkt, pcap
 from Queue import Queue
-from Wutong.wutong import WuTongReceiver
-from DataQueue.handleLists import HandleDataQueue
+from wutong.wutong import WuTongReceiver
+from dataQueue.handleLists import HandleDataQueue
 
 class Main():
     def __init__(self):
@@ -27,7 +27,7 @@ class Main():
 
 
             if srcIp == self.WUTONGIP:
-                # print 'is Wutong ip'
+                # print 'is wutong ip'
                 # print eth['data']['data']['data']
                 self.wenkong.receive(eth['data']['data']['data'])
 
