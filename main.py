@@ -1,3 +1,4 @@
+#coding=utf8
 import dpkt, pcap
 from Queue import Queue
 from wutong.wutong import *
@@ -14,10 +15,6 @@ class Main():
         self.WUTONGIP = '117.79.156.35'
         self.wenkong = WuTongReceiver(self.queue)
         self.queueHandler = HandleDataQueue(self.queue)
-
-
-
-
 
     def main(self):
         self.queueHandler.start()

@@ -1,3 +1,4 @@
+#coding=utf8
 __author__ = 'Administrator'
 import threading,time
 from wutong.wutong import WuTongHandler

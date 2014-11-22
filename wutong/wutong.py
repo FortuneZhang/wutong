@@ -1,4 +1,6 @@
+#encoding=utf-8
 from NetworkAndSync import Sync
+import time
 
 __author__ = 'Administrator'
 from Queue import Queue
@@ -84,6 +86,7 @@ class WutongRequestInfo(threading.Thread):
 
 
     def _analyze_che_info_to_dict(self, che_info, item):
+        print che_info
         (pref_email, after_email) = che_info.split('@Email=')
         info = {x.split('=')[0]: x.split('=')[1] for x in pref_email.split('@') if x != ''}
         after_email_array = after_email.split('@')
@@ -91,15 +94,19 @@ class WutongRequestInfo(threading.Thread):
             info['Email'] = after_email_array[0] + after_email_array[1]
             print after_email_array[2:]
             info.update({x.split('=')[0]: x.split('=')[1] for x in after_email_array[2:] if x != ''})
+        elif '=' not in after_email_array[0]:
+            info['Email'] = after_email_array[0]
+            info.update({x.split('=')[0]: x.split('=')[1] for x in after_email_array[1:] if x != ''})
         else:
             info.update({x.split('=')[0]: x.split('=')[1] for x in che_info.split('@')})
+            info['Email'] = ''
         info['che_id'] = item[1]
         del (info['ICQ'])
         return info
 
     def _build_che_info_sql(self, che_info, item):
         info = self._analyze_che_info_to_dict(che_info, item)
-
+        print 'info', info
         keys = []
         values = []
         for key, value in info.iteritems():
@@ -111,30 +118,102 @@ class WutongRequestInfo(threading.Thread):
         sql += ' ) values( '
         sql += ' , '.join(values)
         sql += ' ) '
-        return sql.decode('utf-8')
+        print info
+        return sql
+
+    def __analyze_huo_info_to_dict(self, huo_info, item):
+        info = {x.split('=')[0]: x.split('=')[1] for x in huo_info.split('@') if x != ''}
+        info['list_iid'] = item[0]
+        del (info['ICQ'])
+        return info
+
+    def _build_huo_info_sql(self, huo_info, item):
+        d = self.__analyze_huo_info_to_dict(huo_info, item)
+        keys = []
+        values = []
+        print d
+        for key, value in d.iteritems():
+            keys.append('"' + key + '"')
+            values.append("'" + value + "'")
+        sql = 'INSERT INTO dbo.wutong_huo ( '
+        sql += ' , '.join(keys)
+        sql += ' ) values( '
+        sql += ' , '.join(values)
+        sql += ' ) '
+
+        return sql
 
     def run(self):
-        item = self.get_one_item()
-        if item:
-            if item[1] == 0:
-                pass
-                # che_info = self.get_huo_info(item[0])
+        while True:
+            item = self.get_one_item()
+            print 'item->', item
+            if item:
+                conn = self.sql_server_driver.getConnection()
+                cursor = conn.cursor()
+                if item[1] == '0' or item[1] == '':
+                    print 'huo'
+                    huo_info = self.get_huo_info(item[0])
+                    huo_sql = self._build_huo_info_sql(huo_info.decode('utf8'), item)
+                    print huo_sql
+                    cursor.execute(huo_sql)
+                    cursor.commit()
+                    conn.close()
+                else:
+                    print 'che'
+                    che_info = self.get_che_info(data_id=item[0], che_id=item[1])
+                    che_sql = self._build_che_info_sql(che_info.decode('utf8'), item)
+                    print che_sql
+                    cursor.execute(che_sql)
+                    cursor.commit()
+                    conn.close()
+                self.update_list_item_has_info(item[2])
+
             else:
-                che_info = self.get_che_info(data_id=item[0], che_id=item[1])
-                sql = self._build_che_info_sql(che_info, item)
+                time.sleep(10)
 
-                conn = self.sql_server_driver.getConnection(sql)
-                conn.cursor()
-
+    def update_list_item_has_info(self, iid):
+        sql = 'update dbo.wutong_list set isGetCheDetail =1 where iid = %s' % (iid)
+        conn = self.sql_server_driver.getConnection()
+        cursor = conn.cursor()
+        cursor.execute(sql)
+        cursor.commit()
+        conn.close()
 
     def get_one_item(self):
         conn = self.sql_server_driver.getConnection()
         cursor = conn.cursor()
-        sql = 'select data_id,che_id from dbo.wutong_list where isGetCheDetail = 0 and che_id not in (select che_id from dbo.wutong_che where id != 0)  '
-        cursor.execute(sql)
-        row = cursor.fetchone()
-        cursor.close()
-        return row
+
+        sql_list = "select top 1 data_id,che_id, iid from dbo.wutong_list where isGetCheDetail = 0 "
+        print 'before while '
+        while True:
+            cursor.execute(sql_list)
+            row_list = cursor.fetchone()
+            print 'row_list->', row_list
+            if row_list is None:
+                print u'没有需要请求的详细信息'
+
+            if row_list[1] == '0' or row_list[1] == '':
+                print u'找到一条需要请求的车队，正在处理'
+                break
+            else:
+                sql_che = 'select iid from  dbo.wutong_che where che_id  = %s ' % (row_list[1])
+                cursor.execute(sql_che)
+                row_che = cursor.fetchone()
+                print 'row_che--> ', row_che
+                if row_che is not None:
+                    print  'is not None'
+                    sql = 'update dbo.wutong_list set isGetCheDetail =1 where iid = %s' % (row_list[2])
+
+                    cursor.execute(sql)
+                    cursor.commit()
+
+                else:
+                    print  'is None'
+                    break
+
+        conn.close()
+
+        return row_list
 
     def get_che_info(self, data_id, che_id):
         print(self.param_config)

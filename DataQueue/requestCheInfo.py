@@ -1,3 +1,4 @@
+#coding=utf8
 from config.db import SQLServerDriver, Config
 from wutong.wutong import WutongRequestInfo
 

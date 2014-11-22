@@ -1,3 +1,4 @@
+#coding=utf8
 __author__ = 'Administrator'
 import json
 import urllib2, urllib, httplib
