@@ -1,7 +1,8 @@
-#coding=utf8
+# coding=utf-8
 __author__ = 'Administrator'
 
 import pyodbc, os
+
 
 
 class SQLServerDriver():
@@ -20,6 +21,45 @@ class SQLServerDriver():
 
     def closeConnection(self):
         self.connection.close()
+
+
+class SQLServerDriverConnectionPoll():
+    __instance = None
+
+    def __init__(self):
+        self.config = Config()
+        self.pool = {}
+        db = self.config.getDb()
+        self.conn_str = 'DRIVER={SQL Server};SERVER=%s;DATABASE=%s;UID=%s;PWD=%s' % (
+            db['SERVER_NAME'], db['DATABASE'], db['UID'], db['PWD'])
+        for x in xrange(1, 2):
+            self.pool[str(x)] = {'busy': None, 'db':pyodbc.connect(self.conn_str, charset="UTF-8")}
+
+
+    def lend(self):
+        conn = None
+        for key, value in self.pool.iteritems():
+            if value['busy'] is None:
+                value['busy'] = True
+                conn = {'idx': key, 'db':value}
+                break
+        else:
+            print u'连接池用完，正在添加更新连接池'
+            idx = str(len(self.pool.keys()) +1)
+            conn = {'busy:': None, 'db':pyodbc.connect(self.conn_str, charset="UTF-8")}
+            self.pool[idx] = conn
+            conn ={'idx':idx, 'db': conn}
+        return conn
+
+    def restore(self,idx):
+        self.pool[idx]['busy'] = None
+
+
+    @classmethod
+    def get_instance(cls):
+        if cls.__instance is None:
+            cls.__instance = SQLServerDriverConnectionPoll()
+        return cls.__instance
 
 
 class Config():
