@@ -34,17 +34,5 @@ class Main():
 
 
 if __name__ == '__main__':
-    # main = Main()
-    # main.main()
-
-    print 'init....'
-    poll = SQLServerDriverConnectionPoll.get_instance()
-
-    conn1 =  poll.lend()
-    conn2 =  poll.lend()
-    print conn1
-    print conn2
-    print conn1['idx']
-
-    poll.restore(conn1['idx'])
-
+    main = Main()
+    main.main()
