@@ -6,7 +6,7 @@ from wutong.wutong import WutongRequestInfo
 class RequestCheInfo():
     def __init__(self):
         self.sql_server_driver = SQLServerDriver()
-        self.config = Config()
+        self.config = Config.get_instance()
 
 
     def run(self):

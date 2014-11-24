@@ -8,7 +8,7 @@ import pyodbc, os
 class SQLServerDriver():
     def __init__(self):
         self.connection = ''
-        self.config = Config()
+        self.config = Config.get_instance()
 
 
     def getConnection(self):
@@ -27,7 +27,7 @@ class SQLServerDriverConnectionPoll():
     __instance = None
 
     def __init__(self):
-        self.config = Config()
+        self.config = Config.get_instance()
         self.pool = {}
         db = self.config.getDb()
         self.conn_str = 'DRIVER={SQL Server};SERVER=%s;DATABASE=%s;UID=%s;PWD=%s' % (
