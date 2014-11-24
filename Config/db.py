@@ -76,7 +76,7 @@ class Config():
         'UserName': 'longcreate'
     }
     syncInterval = 10
-
+    __instance = None
 
     def __init__(self):
         self.is_read = False
@@ -116,3 +116,10 @@ class Config():
         if not self.is_read:
             self._read_config_file()
         return self.__class__.SYNC_PARAM
+
+    @classmethod
+    def get_instance(cls):
+        if cls.__instance is None:
+            cls.__instance = Config()
+
+        return cls.__instance
