@@ -51,7 +51,7 @@ class WuTongDB():
         conn = self.dbDriver.getConnection()
         cursor = conn.cursor()
         print u'查看数据库中是否存在这条数据'
-        check_is_exist_sql = 'select iid from wutong_list where  id = %s' % (data['id'])
+        check_is_exist_sql = 'select [iid] from wutong_list where  id = %s' % (data['id'])
         cursor.execute(check_is_exist_sql)
         row = cursor.fetchone()
         if not row:
@@ -168,6 +168,7 @@ class WutongRequestInfo(threading.Thread):
                     huo_info = self.get_huo_info(item[0])
                     print huo_info
                     huo_sql = self._build_huo_info_sql(huo_info.decode('utf8'), item)
+                    print huo_sql
                     cursor.execute(huo_sql)
                     cursor.commit()
                     conn.close()
@@ -175,6 +176,7 @@ class WutongRequestInfo(threading.Thread):
                     che_info = self.get_che_info(data_id=item[0], che_id=item[1])
                     print che_info
                     che_sql = self._build_che_info_sql(che_info.decode('utf8'), item)
+                    print che_sql
                     cursor.execute(che_sql)
                     cursor.commit()
                     conn.close()
@@ -196,12 +198,13 @@ class WutongRequestInfo(threading.Thread):
         conn = self.sql_server_driver.getConnection()
         cursor = conn.cursor()
 
-        sql_list = "select top 1 data_id,che_id, iid from dbo.wutong_list where isGetCheDetail = 0 "
+        sql_list = "select top 1 [data_id],[che_id], [iid] from dbo.wutong_list where isGetCheDetail = 0 "
         # print 'before while '
         while True:
             cursor.execute(sql_list)
             row_list = cursor.fetchone()
-            # print 'row_list->', row_list
+
+            print u'筛选出来[data_id],[che_id], [iid]->', row_list
             if row_list is None:
                 print u'没有需要请求的详细信息，进入休息队列，10秒后继续。'
                 time.sleep(10)
@@ -211,18 +214,19 @@ class WutongRequestInfo(threading.Thread):
                 print u'找到一条需要请求的车队，正在处理'
                 break
             else:
-                sql_che = 'select iid from  dbo.wutong_che where che_id  = %s ' % (row_list[1])
+                print u'找到一条需要请求的车主，正在处理'
+                sql_che = 'select [iid] from  dbo.wutong_che where che_id  = %s ' % (row_list[1])
                 cursor.execute(sql_che)
                 row_che = cursor.fetchone()
-                # print 'row_che--> ', row_che
+                print 'row_che--> ', row_che
                 if row_che is not None:
-                    # print  'is not None'
+                    print u'已经存在这个车主信息，更新中'
                     sql = 'update dbo.wutong_list set isGetCheDetail =1 where iid = %s' % (row_list[2])
 
                     cursor.execute(sql)
                     cursor.commit()
                 else:
-                    # print  'is None'
+                    print u'不存在这个车主信息，准备请求'
                     break
 
         conn.close()
