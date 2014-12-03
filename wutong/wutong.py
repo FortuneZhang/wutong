@@ -1,5 +1,5 @@
 # coding=utf-8
-from NetworkAndSync import Sync
+from config.sync import HttpSync
 import time
 
 __author__ = 'Administrator'
@@ -92,7 +92,7 @@ class WutongRequestInfo(threading.Thread):
         self.sql_server_driver = sql_server_driver
         self.param_config = param_config
         self.url = 'http://soft.chinawutong.com/DisInfo.ashx'
-        self.sync = Sync.HttpSync()
+        self.sync = HttpSync()
         # http://soft.chinawutong.com/DisInfo.ashx
         # ShellPwd=jftpwTuk6tfUhhWjSDJeeA==&UserID=1481214&UserName=longcreate&DataID=1794412&CheID=218521&Type=Che
 

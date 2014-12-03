@@ -8,7 +8,7 @@ class HttpSync(object):
     def __init__(self):
         pass
 
-    @staticmethod
+    
     def post(self, url, params):
         req = urllib2.Request(url)
         data = urllib.urlencode(params)
