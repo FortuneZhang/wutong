@@ -4,7 +4,6 @@ __author__ = 'Administrator'
 import pyodbc, os
 
 
-
 class SQLServerDriver():
     def __init__(self):
         self.connection = ''
@@ -32,8 +31,8 @@ class SQLServerDriverConnectionPoll():
         db = self.config.getDb()
         self.conn_str = 'DRIVER={SQL Server};SERVER=%s;DATABASE=%s;UID=%s;PWD=%s' % (
             db['SERVER_NAME'], db['DATABASE'], db['UID'], db['PWD'])
-        for x in xrange(1, 2):
-            self.pool[str(x)] = {'idx': str(x), 'busy': None, 'db':pyodbc.connect(self.conn_str, charset="UTF-8")}
+        for x in xrange(1, 11):
+            self.pool[str(x)] = {'idx': str(x), 'busy': None, 'db': pyodbc.connect(self.conn_str, charset="UTF-8")}
 
     def lend(self):
         for key, value in self.pool.iteritems():
@@ -43,16 +42,22 @@ class SQLServerDriverConnectionPoll():
                 break
         else:
             print u'连接池用完，正在添加更新连接池'
-            idx = str(len(self.pool.keys()) +1)
-            conn = {'idx':str(idx),'busy:': True, 'db':pyodbc.connect(self.conn_str, charset="UTF-8")}
+            idx = str(len(self.pool.keys()) + 1)
+            print idx
+            conn = {'idx': str(idx), 'busy': True, 'db': pyodbc.connect(self.conn_str, charset="UTF-8")}
             self.pool[str(idx)] = conn
-
-            conn ={'idx':idx, 'db': conn, 'busy': True}
         return conn
 
-    def restore(self,idx):
-        self.pool[idx]['busy'] = None
 
+    def restore(self, one):
+        self.pool[one['idx']]['busy'] = None
+
+    def get_db_idle_count(self):
+        return len(filter(lambda x: x['busy'] is None, self.pool.values()))
+
+    def re_init(self):
+        for key, value in self.pool.iteritems():
+            value['busy'] = None
 
     @classmethod
     def get_instance(cls):
